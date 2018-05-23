@@ -40,6 +40,10 @@ bool operator != (Pixel const & x, Pixel const & y){
 	return !(x==y);
 }
 
+bool operator != (Pixel const & p, char const & c){
+	return !(p==c);
+}
+
 Pixel::operator char(){
 	return sign;
 }

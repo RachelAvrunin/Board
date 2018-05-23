@@ -1,7 +1,4 @@
 #pragma once
-#include <iostream>
-
-using namespace std;
 
 #include "Player.h"
 
@@ -14,7 +11,12 @@ using namespace std;
 class XYPlayer: public Player {
 public:
 	const string name() const override { return "XYPlayer"; }
-	const Pixel play(const Board& board) override;
+
+	/**
+	 * Selects a single place to put my symbol, given the current board.
+	 * Defines the strategy of the player.
+	 */
+	const Coordinate play(const Board& board) override;
 };
 
 
@@ -25,19 +27,19 @@ public:
 class YXPlayer: public Player {
 public:
 	const string name() const override { return "YXPlayer"; }
-	const Pixel play(const Board& board) override;
+	const Coordinate play(const Board& board) override;
 };
 
 
 /* 
    This player makes illegal moves - 
    it tries to override cells of the other player.
-   It should always lose. 
+   It should always lose.
 */
 class IllegalPlayer: public Player {
 public:
 	const string name() const override { return "YXPlayer"; }
-	const Pixel play(const Board& board) override;
+	const Coordinate play(const Board& board) override;
 };
 
 
@@ -48,5 +50,5 @@ public:
 class ExceptionPlayer: public Player {
 public:
 	const string name() const override { return "YXPlayer"; }
-	const Pixel play(const Board& board) override;
+	const Coordinate play(const Board& board) override;
 };

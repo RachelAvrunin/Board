@@ -23,6 +23,7 @@ class Pixel{
 		friend bool operator == (Pixel const &, char const &);
 		friend bool operator == (Pixel const &, Pixel const &);
 		friend bool operator != (Pixel const &, Pixel const &);
+		friend bool operator != (Pixel const &, char const &);
 
 		//Stream
 		friend ostream& operator << (ostream &, Pixel const &);

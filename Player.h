@@ -1,11 +1,15 @@
 #pragma once
-#include <iostream>
-#include "IllegalCharException.h"
+#include <string>
+#include "Board.h"
+
 using namespace std;
 
 class Player{
-	private:
-        string name;
-	public:
+    public:
         Player();
-}
+        virtual const string name() const = 0;
+        char myChar;
+        virtual const Coordinate play(const Board&) = 0;
+        const char getChar() const;
+        void setChar(char);
+};
