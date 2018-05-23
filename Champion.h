@@ -9,6 +9,6 @@
 */
 class Champion: public Player {
 public:
-	const string name() const override { return "Champion"; }
+	const string name() const override { return "Rachel Ofir and Maria"; }
 	const Coordinate play(const Board& board) override;
 };
