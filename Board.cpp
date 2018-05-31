@@ -1,6 +1,10 @@
 #include <iostream>
 #include <string>
+#include <time.h>
+
+
 #include "Board.h"
+#include "BMPgenerator.h"
 
 using namespace std;
 
@@ -31,6 +35,10 @@ Board::Board(const Board & b){
 
 //Destructor
 Board::~Board(){
+	this-> free();
+}
+
+void Board::free(){
 	for(int i = 0 ; i < n ; i++)
 		delete [] board[i];
 	delete [] board;
@@ -40,6 +48,8 @@ int Board::size() const{
     return this->n;
 }
 
+
+
 Pixel& Board::operator[](const Coordinate c){
     if(c.xPlace > n-1 || c.yPlace > n-1)
         throw IllegalCoordinateException({(int)c.xPlace,(int)c.yPlace});
@@ -48,13 +58,6 @@ Pixel& Board::operator[](const Coordinate c){
 		return this->board[a][b];
 }
 
-// Pixel& Board::operator[](list<int> lst){
-// 	if(lst.size() != 2 || lst.front() > n-1 || lst.back() > n-1 || lst.front() < 0 || lst.back() < 0)
-//         throw IllegalCoordinateException(lst);
-// 		int x = lst.front();
-// 		int y = lst.back();
-// 		return this->board[x][y];    
-// }
 const Pixel& Board::operator[](const Coordinate c) const{
     if(c.xPlace > n-1 || c.yPlace > n-1)
         throw IllegalCoordinateException({(int)c.xPlace,(int)c.yPlace});
@@ -62,13 +65,6 @@ const Pixel& Board::operator[](const Coordinate c) const{
 	int b = c.yPlace;
 		return this->board[a][b];
 }
-// const Pixel& Board::operator[](list<int> lst) const{
-//     if(lst.size() != 2 || lst.front() > n-1 || lst.back() > n-1 || lst.front() < 0 || lst.back() < 0)
-//         throw IllegalCoordinateException(lst);
-// 	int x = lst.front();
-// 	int y = lst.back();
-// 	return this->board[x][y];
-// }
 
 Board& Board:: operator=(char const& c){
 	if (c!='.' && c!='X' && c!='O')
@@ -82,7 +78,7 @@ Board& Board:: operator=(char const& c){
 }
 
 Board Board::operator=(Board const & b){
-	this->~Board();
+	this-> free();
     n = b.n;
     board = new Pixel*[b.n];
     for(uint i = 0; i < b.n; i++){
@@ -93,19 +89,44 @@ Board Board::operator=(Board const & b){
     return *this;
 }
 
-// bool operator==(Board const & x,Board const & y){
+void Board::inputChecker(string & line){
+    for(uint i = 0 ; i < line.length() ; i++)
+        if(line.at(i) != 'X' && line.at(i) != 'O' && line.at(i) != '.')
+            throw "wrong input";
+}
 
-// 	if (x.n != y.n)
-// 		return false;
+void Board::inputInsert(Board & board, string & line, uint & counter){
+    for(uint i = 0 ; i < board.n ; i++){
+        board[{counter,i}] = line.at(i);
+    }
+        counter++;
+}
 
-// 	bool f= true;
-//     for(int i = 0; i < x.n; i++){
-//         for(int j = 0 ; j < x.n ; j++)
-//             if(x[{i,j}] != y[{i,j}])
-// 				f=false;
-//     }
-//     return f;
-// }
+istream& operator >> (istream & is,Board & board){
+    string tmp;
+    uint counter = 0;
+    uint length = 0;
+    while(is >> tmp){
+        if(!counter){
+            length = tmp.length();
+            board.free();
+            board.n = length;
+            board.board = new Pixel*[length];
+            for(uint i = 0; i < length; i++){
+                board.board[i] = new Pixel[length];
+            }
+            board.inputChecker(tmp);
+            board.inputInsert(board,tmp,counter);
+        }
+        else if(counter < length && tmp.length() == length){
+            board.inputChecker(tmp);
+            board.inputInsert(board,tmp,counter);
+        } else{ 
+            board.free();
+            throw "wrong input";
+        }
+    }
+}
 
 ostream& operator << (ostream & os, Board const & b){
     for(int i = 0 ; i < b.n ; i++){
@@ -115,4 +136,53 @@ ostream& operator << (ostream & os, Board const & b){
         os << endl;
     }
     return os;
+}
+
+string Board::draw(int n){
+    int i, j;
+
+    vector<vector<RGB_data>> buffer(n, vector<RGB_data>(n, {0xff, 0xff, 0xff}));
+
+    int x = n - 35;
+    int y = 35;
+    for (int i = 0; i < this->n; i++){
+        y = 35;
+        for (int j = 0; j < this->n; j++){
+            if (board[i][j] == 'X'){
+                drawX(buffer, x, y);
+            }
+            else if (board[i][j] == 'O'){
+                drawO(buffer, x, y);
+            }
+            else if (board[i][j] == '.'){
+                drawDot(buffer, x, y);
+            }
+            y = y + 35;
+        }
+        x = x - 35;
+    }
+
+    RGB_data a[n*n];
+
+    for(int i=0; i<n; i++){
+        for(int j=0; j<n; j++){
+            a[i*n+j] = buffer[i][j];
+        }
+    }
+
+    // std::chrono::high_resolution_clock::time_point t = std::chrono::high_resolution_clock::now();
+    // string time = t.time_since_epoch();
+    
+    time_t rawtime;
+    struct tm * timeinfo;
+
+    time (&rawtime);
+    timeinfo = localtime (&rawtime);
+    char* t;
+    strftime (t,80,"%F_%T",timeinfo);
+    strcat(t,"_img.bmp");
+    cout << t << endl;
+    bmp_generator(t, n, n, (BYTE *)a);
+
+    return (string)t;//need to return the name of the file which is in t so we need to returno we need to retur that (cast t to string and return it)
 }

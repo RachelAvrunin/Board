@@ -22,15 +22,16 @@ class Board{
         Board(const Board &);
         ~Board();
 
-        // Pixel& operator[](list<int>);
-        // const Pixel& operator[](list<int>) const;
+        void free();
         Pixel& operator[](const Coordinate);
         const Pixel& operator[](const Coordinate) const;
         Board& operator=(char const &);
         Board operator=(Board const &);
         friend bool operator==(Board const & , Board const &);
-
+        void inputInsert(Board & , string & , uint &);
+        void inputChecker(string &);
         int size() const;
+        string draw(int);
 
         //Stream
         friend ostream& operator << (ostream &, Board const &);
