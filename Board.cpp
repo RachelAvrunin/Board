@@ -178,11 +178,10 @@ string Board::draw(int n){
 
     time (&rawtime);
     timeinfo = localtime (&rawtime);
-    char* t;
-    strftime (t,80,"%F_%T",timeinfo);
+    char t[80];
+    strftime (t,80,"%F_%T",timeinfo); //HERE!!!!!!!!!!!!!!!!
     strcat(t,"_img.bmp");
-    cout << t << endl;
     bmp_generator(t, n, n, (BYTE *)a);
-
-    return (string)t;//need to return the name of the file which is in t so we need to returno we need to retur that (cast t to string and return it)
+    string s(t);
+    return (s);
 }
