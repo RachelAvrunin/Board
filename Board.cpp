@@ -102,31 +102,45 @@ void Board::inputInsert(Board & board, string & line, uint & counter){
         counter++;
 }
 
-istream& operator >> (istream & is,Board & board){
-    string tmp;
-    uint counter = 0;
-    uint length = 0;
-    while(is >> tmp){
-        if(!counter){
-            length = tmp.length();
-            board.free();
-            board.n = length;
-            board.board = new Pixel*[length];
-            for(uint i = 0; i < length; i++){
-                board.board[i] = new Pixel[length];
-            }
-            board.inputChecker(tmp);
-            board.inputInsert(board,tmp,counter);
-        }
-        else if(counter < length && tmp.length() == length){
-            board.inputChecker(tmp);
-            board.inputInsert(board,tmp,counter);
-        } else{ 
-            board.free();
-            throw "wrong input";
+istream &operator>>(istream &is, Board &sqr){
+    cin.seekg (0, cin.end);
+    string file;
+    is.seekg(0, is.end);
+    
+    int length = is.tellg();
+    sqr.n = (int)sqrt(length);
+
+    sqr.board = new Pixel *[sqr.n ];
+    for (int i = 0; i < sqr.n ; i++){
+        sqr.board[i] = new Pixel[sqr.n];
+    }
+    for (int i = 0; i < sqr.n; i++){
+        for (int j = 1; j < sqr.n; j++){
+            sqr.board[i][j]='.';
         }
     }
+    is.seekg(0, is.beg);
+    int charCount = 0;
+    int i = 0;
+
+    is >> file;
+    while (i < sqr.n){
+        for (int j = 0; j < file.length() && j < sqr.n; j++){
+            if (file.at(j) != '\n')
+                sqr.board[i][j] = file.at(j);
+            charCount++;
+        }
+        charCount++;
+
+        if (charCount >= length){
+            return is;
+        }
+        i++;
+        is >> file;
+    }
+    return is;
 }
+
 
 ostream& operator << (ostream & os, Board const & b){
     for(int i = 0 ; i < b.n ; i++){
