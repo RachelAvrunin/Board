@@ -134,14 +134,13 @@ ostream& operator << (ostream & os, Board const & b){
     }
     return os;
 }
-
 string Board::draw(int n){
     RGB image[n*n];
     for(int i = 0; i < n; i++)
         for(int j = 0; j < n; j++){
-                image[i*n + j].red = 255;
-                image[i*n + j].green = 255;
-                image[i*n + j].blue = 225;
+                image[i*n + j].red = 200;
+                image[i*n + j].green = 200;
+                image[i*n + j].blue = 200;
         }
     int k = n/this->size();
     for(uint i = 0; i < this->size(); i++){
@@ -196,9 +195,9 @@ void Board::drawo(RGB * image, int x, int n,int orig){
         for (int j=0; j < n; ++j)
             if(((i-0.5*n)*(i-0.5*n) + (j-0.5*n)*(j-0.5*n) <= 0.5*n*0.5*n+n) &&
                 ((i-0.5*n)*(i-0.5*n) + (j-0.5*n)*(j-0.5*n) >= 0.5*n*0.5*n-n)){
-                image[x+(i+orig%this->size()/2)*orig+j].red = 128;
+                image[x+(i+orig%this->size()/2)*orig+j].red = 0;
                 image[x+(i+orig%this->size()/2)*orig+j].green = 0;
-                image[x+(i+orig%this->size()/2)*orig+j].blue = 128;
+                image[x+(i+orig%this->size()/2)*orig+j].blue = 255;
             }
 }
 
