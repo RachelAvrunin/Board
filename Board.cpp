@@ -141,7 +141,7 @@ string Board::draw(int n){
         for(int j = 0; j < n; j++){
                 image[i*n + j].red = 255;
                 image[i*n + j].green = 255;
-                image[i*n + j].blue = 200;
+                image[i*n + j].blue = 225;
         }
     int k = n/this->size();
     for(uint i = 0; i < this->size(); i++){
