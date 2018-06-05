@@ -8,6 +8,15 @@
 
 using namespace std;
 
+
+struct RGB {
+  uint8_t red, green, blue;
+public:
+  RGB(): red(255), green(255), blue(255){}
+  RGB(uint8_t red, uint8_t green, uint8_t blue): red(red), green(green), blue(blue) {}
+};
+
+
 class Board{
 	private:
         
@@ -32,7 +41,9 @@ class Board{
         void inputChecker(string &);
         int size() const;
         string draw(int);
-
+        void drawx(RGB *, int, int,int);
+        void drawo(RGB *, int, int,int);
+        bool is_file_exist(string);
         //Stream
         friend ostream& operator << (ostream &, Board const &);
         friend istream& operator >> (istream & ,Board &);

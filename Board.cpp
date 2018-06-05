@@ -1,10 +1,7 @@
 #include <iostream>
 #include <string>
-#include <time.h>
-
-
+#include <fstream>
 #include "Board.h"
-#include "BMPgenerator.h"
 
 using namespace std;
 
@@ -47,7 +44,6 @@ void Board::free(){
 int Board::size() const{
     return this->n;
 }
-
 
 
 Pixel& Board::operator[](const Coordinate c){
@@ -102,45 +98,32 @@ void Board::inputInsert(Board & board, string & line, uint & counter){
         counter++;
 }
 
-istream &operator>>(istream &is, Board &sqr){
-    cin.seekg (0, cin.end);
-    string file;
-    is.seekg(0, is.end);
-    
-    int length = is.tellg();
-    sqr.n = (int)sqrt(length);
-
-    sqr.board = new Pixel *[sqr.n ];
-    for (int i = 0; i < sqr.n ; i++){
-        sqr.board[i] = new Pixel[sqr.n];
-    }
-    for (int i = 0; i < sqr.n; i++){
-        for (int j = 1; j < sqr.n; j++){
-            sqr.board[i][j]='.';
+istream& operator >> (istream & is,Board & board){
+    string tmp;
+    uint counter = 0;
+    uint length = 0;
+    while(is >> tmp){
+        if(!counter){
+            length = tmp.length();
+            board.free();
+            board.n = length;
+            board.board = new Pixel*[length];
+            for(uint i = 0; i < length; i++){
+                board.board[i] = new Pixel[length];
+            }
+            board.inputChecker(tmp);
+            board.inputInsert(board,tmp,counter);
         }
-    }
-    is.seekg(0, is.beg);
-    int charCount = 0;
-    int i = 0;
-
-    is >> file;
-    while (i < sqr.n){
-        for (int j = 0; j < file.length() && j < sqr.n; j++){
-            if (file.at(j) != '\n')
-                sqr.board[i][j] = file.at(j);
-            charCount++;
+        else if(counter < length && tmp.length() == length){
+            board.inputChecker(tmp);
+            board.inputInsert(board,tmp,counter);
+        } else{ 
+            board.free();
+            throw "wrong input";
         }
-        charCount++;
-
-        if (charCount >= length){
-            return is;
-        }
-        i++;
-        is >> file;
     }
     return is;
 }
-
 
 ostream& operator << (ostream & os, Board const & b){
     for(int i = 0 ; i < b.n ; i++){
@@ -153,49 +136,74 @@ ostream& operator << (ostream & os, Board const & b){
 }
 
 string Board::draw(int n){
-    int i, j;
-
-    vector<vector<RGB_data>> buffer(n, vector<RGB_data>(n, {0xff, 0xff, 0xff}));
-
-    int x = n - 35;
-    int y = 35;
-    for (int i = 0; i < this->n; i++){
-        y = 35;
-        for (int j = 0; j < this->n; j++){
-            if (board[i][j] == 'X'){
-                drawX(buffer, x, y);
-            }
-            else if (board[i][j] == 'O'){
-                drawO(buffer, x, y);
-            }
-            else if (board[i][j] == '.'){
-                drawDot(buffer, x, y);
-            }
-            y = y + 35;
+    RGB image[n*n];
+    for(int i = 0; i < n; i++)
+        for(int j = 0; j < n; j++){
+                image[i*n + j].red = 200;
+                image[i*n + j].green = 200;
+                image[i*n + j].blue = 200;
         }
-        x = x - 35;
-    }
-
-    RGB_data a[n*n];
-
-    for(int i=0; i<n; i++){
-        for(int j=0; j<n; j++){
-            a[i*n+j] = buffer[i][j];
+    int k = n/this->size();
+    for(uint i = 0; i < this->size(); i++){
+        for(uint j = 0; j < this->size(); j++){
+            if((*this)[{i,j}] == 'X')
+                drawx(image, i*(n*k)+j*k + n%this->size()/2, k,n);
+            else if((*this)[{i,j}] == 'O')
+                drawo(image, i*(n*k)+j*k + n%this->size()/2, k,n);
         }
     }
+    for(int i = 0; i < n-n%this->size(); i++){
+        for(int j = 0; j < n-n%this->size(); j++){
+            if(j>0 && j % k == 0 && j< n-k+1){
+                image[(i+n%this->size()/2)*n + j+n%this->size()/2].red = 0;
+                image[(i+n%this->size()/2)*n + j+n%this->size()/2].green = 0;
+                image[(i+n%this->size()/2)*n + j+n%this->size()/2].blue = 0;
+            }
+            if(i>0 && i % k == 0 && i< n-k+1){
+                image[(i+n%this->size()/2)*n + j+n%this->size()/2].red = 0;
+                image[(i+n%this->size()/2)*n + j+n%this->size()/2].green = 0;
+                image[(i+n%this->size()/2)*n + j+n%this->size()/2].blue = 0;
+            }
+        }
+    }
+    string filename = to_string(n);
+    int counter = 0;
 
-    // std::chrono::high_resolution_clock::time_point t = std::chrono::high_resolution_clock::now();
-    // string time = t.time_since_epoch();
-    
-    time_t rawtime;
-    struct tm * timeinfo;
+    while (is_file_exist(filename+".ppm")){
+        counter++;
+        filename = to_string(n) + "_" + to_string(counter);
+    }
+    filename += ".ppm";
+    ofstream out(filename, ios::out | ios::binary);
+    out << "P6" << endl << n << " " << n << endl << 255 << endl;
+    out.write(reinterpret_cast<char*>(&image), 3*n*n);
+    out.close();
+    return filename;
+}
 
-    time (&rawtime);
-    timeinfo = localtime (&rawtime);
-    char t[80];
-    strftime (t,80,"%F_%T",timeinfo); //HERE!!!!!!!!!!!!!!!!
-    strcat(t,"_img.bmp");
-    bmp_generator(t, n, n, (BYTE *)a);
-    string s(t);
-    return (s);
+void Board::drawx(RGB * image, int x, int n,int orig){
+    for (int i=0; i<n; i++)
+        for (int j=0; j<n; ++j)
+            if (i == j || i == j+1 || i+1 == j || (n - i - 1 == j) || (n - i - 2 == j) || (n - i == j)){
+                image[x+(i+orig%this->size()/2)*orig+j].red = 255;
+                image[x+(i+orig%this->size()/2)*orig+j].green = 0;
+                image[x+(i+orig%this->size()/2)*orig+j].blue = 0;
+            }
+}
+
+void Board::drawo(RGB * image, int x, int n,int orig){
+    for (int i=0; i<n; ++i)
+        for (int j=0; j < n; ++j)
+            if(((i-0.5*n)*(i-0.5*n) + (j-0.5*n)*(j-0.5*n) <= 0.5*n*0.5*n+n) &&
+                ((i-0.5*n)*(i-0.5*n) + (j-0.5*n)*(j-0.5*n) >= 0.5*n*0.5*n-n)){
+                image[x+(i+orig%this->size()/2)*orig+j].red = 0;
+                image[x+(i+orig%this->size()/2)*orig+j].green = 0;
+                image[x+(i+orig%this->size()/2)*orig+j].blue = 255;
+            }
+}
+
+bool Board::is_file_exist(const string fileName)
+{
+    std::ifstream infile(fileName);
+    return infile.good();
 }
